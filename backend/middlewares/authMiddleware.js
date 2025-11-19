@@ -1,6 +1,6 @@
 // middleware/auth.js
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import { User } from '../models/User.js';
 
 const parseBearer = (authHeader = '') => {
   if (typeof authHeader !== 'string') return null;
@@ -9,7 +9,7 @@ const parseBearer = (authHeader = '') => {
   return authHeader.slice(7).trim();
 };
 
-exports.verifyToken = async (req, res, next) => {
+export const verifyToken = async (req, res, next) => {
   try {
     const token = parseBearer(req.headers.authorization);
     if (!token) return res.status(401).json({ message: 'Unauthorized: Token missing' });
@@ -31,7 +31,7 @@ exports.verifyToken = async (req, res, next) => {
   }
 };
 
-exports.authorizeRoles = (...allowedRoles) => {
+export const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user || !allowedRoles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Access denied: Insufficient role' });
@@ -40,7 +40,7 @@ exports.authorizeRoles = (...allowedRoles) => {
   };
 };
 
-exports.requireSuperAdmin = (req, res, next) => {
+export const requireSuperAdmin = (req, res, next) => {
   if (req.user?.role !== 'superadmin') {
     return res.status(403).json({ message: 'Access denied. Not a super admin.' });
   }

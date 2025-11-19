@@ -1,11 +1,19 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const User = require('../models/User');
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { User } from '../models/User.js'; // Use .js for ESM
 
+// ES module __dirname fix
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// JWT helper
 const signToken = (payload) =>
   jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2d' });
 
+// Delete uploaded files helper
 const deleteUploadedFiles = (files) => {
   if (!files || !files.length) return;
 
@@ -16,7 +24,8 @@ const deleteUploadedFiles = (files) => {
   });
 };
 
-exports.getMe = async (req, res) => {
+// Get current user
+export const getMe = async (req, res) => {
   try {
     const user = req.user.toObject();
     delete user.password;
@@ -28,12 +37,12 @@ exports.getMe = async (req, res) => {
   }
 };
 
-exports.register = async (req, res) => {
+// Register new user
+export const register = async (req, res) => {
   try {
     const { name, email, password, role = 'creator', experience, portfolio } = req.body;
-    const files = req.files; // req.files is an array when using upload.array('designs', 5)
+    const files = req.files;
 
-    // Basic required fields
     if (!email || !password || !role) {
       deleteUploadedFiles(files);
       return res.status(400).json({ message: 'Email, password and role are required' });
@@ -44,7 +53,6 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
 
-    // Designer-specific validation
     if (role === 'designer') {
       if (!experience || !portfolio) {
         deleteUploadedFiles(files);
@@ -57,23 +65,19 @@ exports.register = async (req, res) => {
       }
     }
 
-    // Check for existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       deleteUploadedFiles(files);
       return res.status(409).json({ message: 'Email already registered' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Prepare design file URLs
     let designUrls = [];
     if (role === 'designer') {
       designUrls = files.map(file => `/uploads/${file.filename}`);
     }
 
-    // Create and save user
     const newUser = new User({
       name,
       email,
@@ -86,7 +90,6 @@ exports.register = async (req, res) => {
 
     await newUser.save();
 
-    // Remove password before sending response
     const { password: _, ...userWithoutPassword } = newUser._doc;
 
     res.status(201).json({
@@ -100,10 +103,9 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 };
-// Updated login function
 
-
-exports.login = async (req, res) => {
+// Login
+export const login = async (req, res) => {
   const { email, password } = req.body || {};
 
   if (!email || !password) {
@@ -112,35 +114,21 @@ exports.login = async (req, res) => {
 
   try {
     const emailLower = String(email).toLowerCase().trim();
-
-    // Password is select:false in the model; include explicitly
     const user = await User.findOne({ email: emailLower }).select('+password +suspended');
 
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    if (user.suspended) {
-      return res.status(403).json({ message: 'Account suspended. Contact support.' });
-    }
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    if (user.suspended) return res.status(403).json({ message: 'Account suspended. Contact support.' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
 
     const token = signToken({ id: user._id, role: user.role });
 
-    // remove sensitive fields
     const userObj = user.toObject();
     delete userObj.password;
     delete userObj.suspended;
 
-    return res.status(200).json({
-      message: 'Login successful',
-      token,
-      user: userObj,
-    });
+    return res.status(200).json({ message: 'Login successful', token, user: userObj });
 
   } catch (err) {
     console.error('Login error:', err);
@@ -150,20 +138,23 @@ exports.login = async (req, res) => {
     });
   }
 };
-exports.getProfile = async (req, res) => {
+
+// Get profile by ID
+export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.params.uid);
     if (!user) return res.status(404).json({ message: 'User not found' });
-
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch profile', error: error.message });
   }
 };
-exports.updateProfile = async (req, res) => {
+
+// Update profile
+export const updateProfile = async (req, res) => {
   try {
     const uid = req.user.id;
-    const { experience, portfolio, password, email, name, oldPassword } = req.body;
+    const { experience, portfolio, password, oldPassword } = req.body;
     const file = req.file;
 
     const user = await User.findById(uid);
@@ -171,35 +162,24 @@ exports.updateProfile = async (req, res) => {
 
     const updateData = { updatedAt: new Date() };
 
-    // Handle designer validation
     if (user.role === 'designer') {
-      if (experience?.trim() === '') 
-        return res.status(400).json({ message: 'Experience cannot be empty' });
-      if (portfolio?.trim() === '') 
-        return res.status(400).json({ message: 'Portfolio cannot be empty' });
-      
+      if (experience?.trim() === '') return res.status(400).json({ message: 'Experience cannot be empty' });
+      if (portfolio?.trim() === '') return res.status(400).json({ message: 'Portfolio cannot be empty' });
+
       if (experience) updateData.experience = experience;
       if (portfolio) updateData.portfolio = portfolio;
     }
 
-    // Handle password update
     if (password) {
-      if (!oldPassword) 
-        return res.status(400).json({ message: 'Old password is required' });
-      
+      if (!oldPassword) return res.status(400).json({ message: 'Old password is required' });
       const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) 
-        return res.status(401).json({ message: 'Old password is incorrect' });
-      
-      if (password.length < 6) 
-        return res.status(400).json({ message: 'Password must be at least 6 characters' });
-      
+      if (!isMatch) return res.status(401).json({ message: 'Old password is incorrect' });
+      if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
+
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    // Handle file uploads
     if (file) {
-      // Delete old profile pic
       if (user.profilePic) {
         const oldPath = path.join(__dirname, '..', user.profilePic);
         fs.unlink(oldPath, err => err && console.error(err));
@@ -207,7 +187,6 @@ exports.updateProfile = async (req, res) => {
       updateData.profilePic = `/uploads/${file.filename}`;
     }
 
-    // Handle design updates
     if (req.files?.length) {
       user.designs.forEach(design => {
         const filePath = path.join(__dirname, '..', design);
@@ -216,7 +195,6 @@ exports.updateProfile = async (req, res) => {
       updateData.designs = req.files.map(f => `/uploads/${f.filename}`);
     }
 
-    // Handle availability
     if (req.body.availability) {
       try {
         updateData.availability = JSON.parse(req.body.availability);
@@ -225,19 +203,12 @@ exports.updateProfile = async (req, res) => {
       }
     }
 
-    // Update user
-    const updatedUser = await User.findByIdAndUpdate(uid, updateData, { new: true })
-                                 .select('-password');
+    const updatedUser = await User.findByIdAndUpdate(uid, updateData, { new: true }).select('-password');
 
-    res.status(200).json({
-      message: 'Profile updated successfully',
-      user: updatedUser,
-    });
+    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
 
   } catch (error) {
     console.error('Profile update error:', error);
     res.status(500).json({ message: 'Failed to update profile', error: error.message });
   }
 };
-
-

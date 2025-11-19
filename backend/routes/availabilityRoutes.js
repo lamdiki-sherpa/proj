@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware';
+import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { updateAvailability, getAvailableSlots } from '../controllers/availabilityController.js';
 
 const router = express.Router();

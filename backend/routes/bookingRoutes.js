@@ -6,7 +6,7 @@ import {
   cancelByCreator,
   cancelByDesigner
 } from '../controllers/bookingController.js';
-import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware';
+import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 

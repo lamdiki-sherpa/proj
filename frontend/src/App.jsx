@@ -80,7 +80,7 @@ export default function App() {
 
 <Route
   path="/creator"
-  element={user?.role === 'creator' ? <MainLayout user={user} logout={logout} /> : <Navigate to="/login" />}
+  element={<MainLayout user={user} logout={logout} />}
 >
   <Route index element={<Home />} />
   <Route path="explore" element={<Explore />} />
@@ -96,18 +96,18 @@ export default function App() {
         {/* Default Route */}
         <Route
           path="/"
-          element={
-            user ? (
-              user.role === 'superadmin' ? (
-                <Navigate to="/superadmin/dashboard" />
-              ) : user.role === 'designer' ? (
-                <Navigate to="/designer" />
-              ) : (
-                <Navigate to="/creator" />
-              )
-            ) : (
-              <Navigate to="/login" />
-            )
+          element={<Navigate to="/creator"/>
+            // user ? (
+            //   user.role === 'superadmin' ? (
+            //     <Navigate to="/superadmin/dashboard" />
+            //   ) : user.role === 'designer' ? (
+            //     <Navigate to="/designer" />
+            //   ) : (
+            //     <Navigate to="/creator" />
+            //   )
+            // ) : (
+            //   <Navigate to="/login" />
+            // )
           }
         />
       </Routes>

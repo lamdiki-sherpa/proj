@@ -1,10 +1,9 @@
-const express = require('express');
+import express from 'express';
+import upload from '../middlewares/upload.js';
+import * as authController from '../controllers/authController.js';
+import { verifyToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import rateLimit from 'express-rate-limit';
 const router = express.Router();
-const upload = require('../middlewares/upload');
-const authController = require('../controllers/authController'); // <---- ADD THIS
-const { verifyToken, authorizeRoles } = require('../middlewares/authMiddleware');
-const rateLimit = require('express-rate-limit');
-
 // Define rate limiter for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -25,4 +24,4 @@ router.get('/admin-only', verifyToken, authorizeRoles('superadmin'), (req, res) 
   res.json({ message: 'Welcome Super Admin', user: req.user });
 });
 
-module.exports = router;
+export default router;

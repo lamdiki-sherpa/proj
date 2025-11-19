@@ -5,7 +5,7 @@ import {
   createBookingSchema,
   updateBookingStatusSchema,
   cancelBookingSchema
-} from '../validators/booking.js';
+} from '../validators/bookingSchemas.js';
 
 // Creator: request a booking
 export const createBooking = async (req, res) => {

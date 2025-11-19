@@ -1,8 +1,8 @@
-const User = require('../models/User');
-const Post = require('../models/Post');
+import { User } from '../models/User.js';
+import Post from '../models/Post.js';
 
 // 1. Get all users (designers + creators, exclude superadmins if needed)
-exports.getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res) => {
   try {
     // Fetch designers and creators only
     const users = await User.find({ role: { $in: ['designer', 'creator'] } });
@@ -13,7 +13,7 @@ exports.getAllUsers = async (req, res) => {
 };
 
 // 2. Get all designers
-exports.getAllDesigners = async (req, res) => {
+export const getAllDesigners = async (req, res) => {
   try {
     const designers = await User.find({ role: 'designer' });
     res.status(200).json(designers);
@@ -23,7 +23,7 @@ exports.getAllDesigners = async (req, res) => {
 };
 
 // 3. Delete a user by ID
-exports.deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
     await User.findByIdAndDelete(id);
@@ -34,7 +34,7 @@ exports.deleteUser = async (req, res) => {
 };
 
 // 4. Change user role
-exports.changeUserRole = async (req, res) => {
+export const changeUserRole = async (req, res) => {
   const { id } = req.params;
   const { newRole } = req.body;
 
@@ -56,7 +56,7 @@ exports.changeUserRole = async (req, res) => {
 };
 
 // 5. Suspend user (sets suspended: true)
-exports.suspendUser = async (req, res) => {
+export const suspendUser = async (req, res) => {
   const { id } = req.params;
   try {
     await User.findByIdAndUpdate(id, { suspended: true });
@@ -67,7 +67,7 @@ exports.suspendUser = async (req, res) => {
 };
 
 // 6. Dashboard stats
-exports.getDashboardStats = async (req, res) => {
+export const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: { $in: ['designer', 'creator'] } });
     const totalDesigners = await User.countDocuments({ role: 'designer' });
@@ -81,7 +81,7 @@ exports.getDashboardStats = async (req, res) => {
 };
 
 // 7. Get latest posts
-exports.getLatestPosts = async (req, res) => {
+export const getLatestPosts = async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 }).limit(10);
     res.status(200).json(posts);
@@ -91,7 +91,7 @@ exports.getLatestPosts = async (req, res) => {
 };
 
 // 8. Engagement stats (likes and comments)
-exports.getEngagementStats = async (req, res) => {
+export const getEngagementStats = async (req, res) => {
   try {
     const posts = await Post.find();
 
@@ -110,7 +110,7 @@ exports.getEngagementStats = async (req, res) => {
 };
 
 // 9. Weekly analysis (posts last 7 days)
-exports.getWeeklyAnalysis = async (req, res) => {
+export const getWeeklyAnalysis = async (req, res) => {
   try {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -123,7 +123,7 @@ exports.getWeeklyAnalysis = async (req, res) => {
 };
 
 // 10. Daily posts count (last 7 days)
-exports.getDailyPostsCount = async (req, res) => {
+export const getDailyPostsCount = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -153,7 +153,7 @@ exports.getDailyPostsCount = async (req, res) => {
 };
 
 // 11. Daily analysis (posts last 24 hours)
-exports.getDailyAnalysis = async (req, res) => {
+export const getDailyAnalysis = async (req, res) => {
   try {
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
@@ -174,7 +174,7 @@ const getWeekNumber = (date) => {
   return 1 + Math.round(((temp - week1) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
 };
 
-exports.getWeeklyPostsCount = async (req, res) => {
+export const getWeeklyPostsCount = async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);

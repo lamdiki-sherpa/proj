@@ -1,8 +1,8 @@
 // controllers/availabilityController.js
 import { User } from '../models/User.js';
 import { Booking, BOOKING_STATUS } from '../models/Booking.js';
-import { generateSlotsForDay, removeConflicts } from '../services/time.js';
-import { updateAvailabilitySchema } from '../validators/booking.js';
+import { generateSlotsForDay, removeConflicts } from '../utils/time.js';
+import { updateAvailabilitySchema } from '../validators/bookingSchemas.js';
 
 // Designer updates working hours & blocked dates
 export const updateAvailability = async (req, res) => {

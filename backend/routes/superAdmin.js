@@ -1,7 +1,9 @@
-const express = require('express');
+// routes/superAdminRoutes.js
+import express from 'express';
+import * as superAdminController from '../controllers/superAdminController.js';
+import { verifyToken, requireSuperAdmin } from '../middlewares/authMiddleware.js';
+
 const router = express.Router();
-const superAdminController = require('../controllers/superAdminController');
-const { verifyToken, requireSuperAdmin } = require('../middlewares/authMiddleware');
 
 // Apply verifyToken and requireSuperAdmin middleware to all routes here
 router.use(verifyToken, requireSuperAdmin);
@@ -42,4 +44,4 @@ router.get('/posts/daily-analysis', superAdminController.getDailyAnalysis);
 // Weekly posts count (last 4 weeks)
 router.get('/posts/weekly-count', superAdminController.getWeeklyPostsCount);
 
-module.exports = router;
+export default router;

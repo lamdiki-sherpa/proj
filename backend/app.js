@@ -1,18 +1,19 @@
 // app.js
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
-const connectDB = require('./config/db');
-const cors = require('cors');
-const helmet = require('helmet');
+import 'dotenv/config'; // automatically calls config()
+import express from 'express';
+import http from 'http';
+import { Server as socketIo } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import connectDB from './config/db.js';
+import cors from 'cors';
+import helmet from 'helmet';
 
-const authRoutes = require('./routes/authRoutes');
-const superAdminRoutes = require('./routes/superAdmin');
-const postRoutes = require('./routes/postRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
+import authRoutes from './routes/authRoutes.js';
+import superAdminRoutes from './routes/superAdmin.js';
+import postRoutes from './routes/postRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
 import availabilityRoutes from './routes/availabilityRoutes.js';
 import designerRoutes from './routes/designerRoutes.js';
 
@@ -20,12 +21,14 @@ connectDB();
 
 const app = express();
 const server = http.createServer(app); // create HTTP server
-const io = socketIo(server, {
+const io = new socketIo(server, {
   cors: {
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST']
   }
 });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 app.set('io', io); // make io accessible in controllers
 
 io.on('connection', (socket) => {

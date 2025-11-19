@@ -1,8 +1,9 @@
-const Post = require('../models/Post');
-const User = require('../models/User');
-const Category = require('../models/Category');
+import {User} from '../models/User.js';
+import Post from '../models/Post.js';
+import Category from '../models/Category.js';
+
 // Upload new post with images
-exports.uploadHandlerFlexible = async (req, res) => {
+export const uploadHandlerFlexible = async (req, res) => {
   try {
     const { designName, category, description } = req.body;
     const user = req.user;
@@ -43,7 +44,7 @@ exports.uploadHandlerFlexible = async (req, res) => {
 };
 
 
-exports.getHomeData = async (req, res) => {
+export const getHomeData = async (req, res) => {
   try {
     // Example implementation - adjust based on your needs
     const topPosts = await Post.find()
@@ -70,7 +71,7 @@ exports.getHomeData = async (req, res) => {
   }
 };
 
-exports.getCategories = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
     // Get distinct categories from posts
     const categories = await Post.distinct('category');
@@ -81,7 +82,7 @@ exports.getCategories = async (req, res) => {
   }
 };
 
-exports.sharePost = async (req, res) => {
+export const sharePost = async (req, res) => {
   try {
     // TODO: Implement share functionality
     res.status(501).json({ message: 'Share functionality not implemented yet' });
@@ -91,7 +92,7 @@ exports.sharePost = async (req, res) => {
   }
 };
 
-exports.getAllPosts = async (req, res) => {
+export const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 });
     res.status(200).json({ posts });
@@ -102,7 +103,7 @@ exports.getAllPosts = async (req, res) => {
 };
 
 // Get explore feed (recent posts with like/comment info)
-exports.getExploreFeed = async (req, res) => {
+export const getExploreFeed = async (req, res) => {
   try {
     const userId = req.user?._id;
 
@@ -135,7 +136,7 @@ exports.getExploreFeed = async (req, res) => {
 
 
 // Toggle reaction on post by type (like, heart, laugh, clap)
-exports.reactToPost = async (req, res) => {
+export const reactToPost = async (req, res) => {
   try {
     const { postId } = req.params;
     const { reactionType } = req.body; // e.g., 'like', 'heart', 'laugh', 'clap'
@@ -198,7 +199,7 @@ exports.reactToPost = async (req, res) => {
 };
 
 // Like or unlike a post
-exports.likePost = async (req, res) => {
+export const likePost = async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user._id;
@@ -227,7 +228,7 @@ exports.likePost = async (req, res) => {
 };
 
 
-exports.toggleShare = async (req, res) => {
+export const toggleShare = async (req, res) => {
   try {
     const { postId } = req.params; // ID of the original post
     const { message } = req.body;
@@ -303,7 +304,7 @@ exports.toggleShare = async (req, res) => {
 
 
 
-exports.addComment = async (req, res) => {
+export const addComment = async (req, res) => {
   try {
     const { postId } = req.params;
     const { comment } = req.body;
@@ -338,7 +339,7 @@ exports.addComment = async (req, res) => {
 };
 
 // Get comments for a post
-exports.getComments = async (req, res) => {
+export const getComments = async (req, res) => {
   try {
     const { postId } = req.params;
     const post = await Post.findById(postId).select('comments');
@@ -352,7 +353,7 @@ exports.getComments = async (req, res) => {
 };
 
 // Update comment
-exports.updateComment = async (req, res) => {
+export const updateComment = async (req, res) => {
   try {
     const { postId, commentId } = req.params;
     const { comment } = req.body;
@@ -384,7 +385,7 @@ exports.updateComment = async (req, res) => {
 };
 
 // Delete comment
-exports.deleteComment = async (req, res) => {
+export const deleteComment = async (req, res) => {
   try {
     const { postId, commentId } = req.params;
     const user = req.user;
@@ -411,7 +412,7 @@ exports.deleteComment = async (req, res) => {
 };
 
 // Edit a post (only owner)
-exports.editPost = async (req, res) => {
+export const editPost = async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user._id;
@@ -442,7 +443,7 @@ exports.editPost = async (req, res) => {
 };
 
 // Delete a post (only owner)
-exports.deletePost = async (req, res) => {
+export const deletePost = async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user._id;
@@ -461,7 +462,7 @@ exports.deletePost = async (req, res) => {
   }
 };
 
-exports.bookmarkPost = async (req, res) => {
+export const bookmarkPost = async (req, res) => {
   try {
     const { postId } = req.params;
     const userId = req.user._id;
@@ -497,7 +498,7 @@ exports.bookmarkPost = async (req, res) => {
 };
 
 // Get all bookmarked posts
-exports.getBookmarkedPosts = async (req, res) => {
+export const getBookmarkedPosts = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
       .populate({
@@ -531,7 +532,7 @@ exports.getBookmarkedPosts = async (req, res) => {
 };
 
 // Get all posts by logged-in user
-exports.getMyPosts = async (req, res) => {
+export const getMyPosts = async (req, res) => {
   try {
     const userId = req.user._id;
     const posts = await Post.find({ userId }).sort({ createdAt: -1 });

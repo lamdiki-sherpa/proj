@@ -1,7 +1,8 @@
-const Category = require('../models/Category');
+// controllers/categoryController.js
+import Category from '../models/Category.js';
 
-// Create a new category (admin only, ideally)
-exports.createCategory = async (req, res) => {
+// Create a new category (admin only)
+export const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
 
@@ -26,7 +27,7 @@ exports.createCategory = async (req, res) => {
 };
 
 // Get all categories
-exports.getCategories = async (req, res) => {
+export const getCategories = async (req, res) => {
   try {
     const categories = await Category.find().sort({ name: 1 });
     res.status(200).json({ categories });
@@ -37,7 +38,7 @@ exports.getCategories = async (req, res) => {
 };
 
 // Delete a category
-exports.deleteCategory = async (req, res) => {
+export const deleteCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
     await Category.findByIdAndDelete(categoryId);
